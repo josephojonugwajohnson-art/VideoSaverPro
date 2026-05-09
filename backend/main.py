@@ -266,21 +266,32 @@ async function extract(){
 }
 
 async function downloadVideo(){
-    let res = await fetch("/api/download", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            url: videoData.originalUrl,
-            format_id: selectedFormat
-        })
-    });
+    try {
+        if(!videoData || !videoData.originalUrl){
+            alert("No video loaded");
+            return;
+        }
 
-    let data = await res.json();
+        let res = await fetch("/api/download", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({
+                url: videoData.originalUrl,
+                format_id: selectedFormat || "best"
+            })
+        });
 
-    if(data.success){
-        window.open(data.download_url, "_blank");
-    } else {
-        alert(data.error);
+        let data = await res.json();
+        console.log(data);
+
+        if(data.success){
+            window.open(data.download_url, "_blank");
+        } else {
+            alert(data.error || "Download failed");
+        }
+
+    } catch (e) {
+        alert("Download error: " + e.message);
     }
 }
 
