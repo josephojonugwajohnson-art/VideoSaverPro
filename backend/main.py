@@ -105,34 +105,19 @@ async def download_video(request: DownloadRequest):
     }
     
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(real_url, download=True)
-            filename = ydl.prepare_filename(info)
-            
-            # Fix extension
-            if not filename.endswith('.mp4'):
-                filename = filename.rsplit('.', 1)[0] + '.mp4'
-            
-            # Check if file exists
-            if not os.path.exists(filename):
-                # Find actual file in downloads folder
-                files = os.listdir(DOWNLOAD_DIR)
-                for f in files:
-                    if video_id in f:
-                        filename = os.path.join(DOWNLOAD_DIR, f)
-                        break
-            
-            if not os.path.exists(filename):
-                return {"success": False, "error": "File not found after download"}
-            
-            file_size = os.path.getsize(filename)
-            size_mb = round(file_size / (1024*1024), 1)
-            
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(real_url, download=True)
+        filename = ydl.prepare_filename(info)
+
+        if not os.path.exists(filename):
+            return {
+                "success": False,
+                "error": "Download file not found"
+            }
+
             return {
     "success": True,
     "video_id": video_id,
-    "file_path": filename,
-    "size_mb":  size_mb,
     "download_url": f"/downloads/{os.path.basename(filename)}"
 } 
     except Exception as e:
