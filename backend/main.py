@@ -230,6 +230,41 @@ body{
 
 <script>
 
+async function extract(){
+    try {
+        const url = document.getElementById("url").value;
+
+        if(!url){
+            alert("Paste URL first");
+            return;
+        }
+
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("result").style.display = "none";
+
+        let res = await fetch("/api/extract", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ url })
+        });
+
+        let data = await res.json();
+
+        if(data.success){
+            document.getElementById("thumb").src = data.thumbnail;
+            document.getElementById("title").innerText = data.title;
+            document.getElementById("result").style.display = "block";
+        } else {
+            alert(data.error || "Extract failed");
+        }
+
+    } catch (e) {
+        alert("Error: " + e.message);
+    } finally {
+        document.getElementById("loading").style.display = "none";
+    }
+}
+
 async function downloadVideo(){
     let res = await fetch("/api/download", {
         method:"POST",
