@@ -129,13 +129,12 @@ async def download_video(request: DownloadRequest):
             size_mb = round(file_size / (1024*1024), 1)
             
             return {
-                "success": True,
-                "video_id": video_id,
-                "file_path": filename,
-                "size_mb": size_mb,
-                "download_url": f"/downloads/{os.path.basename(filename)}"
-            }
-            
+    "success": True,
+    "video_id": video_id,
+    "file_path": filename,
+    "size_mb":  size_mb,
+    "download_url": f"/downloads/{os.path.basename(filename)}"
+} 
     except Exception as e:
         return {"success": False, "error": str(e)}
 
