@@ -223,7 +223,16 @@ async function download(){
     } else {alert('Download failed: '+(data.error||'Unknown'));}
   } catch(e){alert('Download error');console.error(e);}
 }
+
 </script>
+
+<div style="margin-top:20px;text-align:center;">
+    <a href="/privacy" style="color:#e94560;">Privacy Policy</a> |
+    <a href="/terms" style="color:#e94560;">Terms</a> |
+    <a href="/about" style="color:#e94560;">About</a>
+</div>
+
 </body>
-</html>"""
+</html>
+"""
     return html_content
