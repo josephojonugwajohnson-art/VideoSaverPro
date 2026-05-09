@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Saver Pro</title>
+<style>
+body{font-family:sans-serif;background:#1a1a2e;color:#fff;padding:20px;max-width:500px;margin:0 auto}
+.header{background:#e94560;padding:20px;text-align:center;border-radius:12px;margin-bottom:20px}
+.input{width:100%;padding:15px;border-radius:10px;border:2px solid #e94560;background:#0f3460;color:#fff;margin:10px 0}
+.btn{width:100%;padding:15px;background:#e94560;border:none;border-radius:10px;color:#fff;font-size:16px;margin:10px 0}
+.result{background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;margin-top:20px;display:none}
+.thumb{width:100%;border-radius:8px;margin-bottom:10px}
+.quality{padding:10px;margin:5px 0;background:#0f3460;border-radius:8px;cursor:pointer}
+.quality.selected{border:2px solid #e94560}
+.ad{height:50px;background:#0f3460;display:flex;align-items:center;justify-content:center;color:#888;font-size:11px;margin:10px 0}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>🎬 Video Saver Pro</h1>
+<p>Download Facebook Videos</p>
+</div>
+
+<div class="ad">AdMob Banner Ad</div>
+
+<input type="text" class="input" id="url" placeholder="Paste Facebook URL here...">
+<button class="btn" onclick="extract()">▶️ EXTRACT VIDEO</button>
+
+<div class="result" id="result">
+<img class="thumb" id="thumb" src="">
+<div id="title"></div>
+<div id="qualities"></div>
+<button class="btn" onclick="download()" style="background:#00d26a">⬇️ DOWNLOAD</button>
+</div>
+
+<div class="ad">AdMob Banner Ad</div>
+
+<script>
+const API = 'http://localhost:8000';
+let videoData = null;
+let selectedFormat = 'best';
+
+async function extract(){
+  const url = document.getElementById('url').value;
+  if(!url){alert('Paste URL first');return;}
+  
+  document.getElementById('result').style.display='none';
+  
+  try{
+    const res = await fetch(API+'/api/extract',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({url:url})
+    });
+    const data = await res.json();
+    
+    if(data.success){
+      videoData = {...data, originalUrl:url};
+      document.getElementById('thumb').src = data.thumbnail;
+      document.getElementById('title').innerHTML = '<h3>'+data.title+'</h3>';
+      
+      let html = '<p>Select Quality:</p>';
+      data.formats.forEach((f,i)=>{
+        html += '<div class="quality '+(i==0?'selected':'')+'" onclick="select(this,\\''+f.format_id+'\\')">'+f.quality+'</div>';
+      });
+      document.getElementById('qualities').innerHTML = html;
+      document.getElementById('result').style.display='block';
+    } else {
+      alert('Error: '+data.error);
+    }
+  } catch(e){
+    alert('Server error. Is backend running?');
+  }
+}
+
+function select(el, fmt){
+  document.querySelectorAll('.quality').forEach(q=>q.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedFormat = fmt;
+}
+
+async function download(){
+  if(!videoData)return;
+  try{
+    const res = await fetch(API+'/api/download',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({url:videoData.originalUrl, format_id:selectedFormat})
+    });
+    const data = await res.json();
+    if(data.success){
+      window.open(API+data.download_url, '_blank');
+      alert('Download started!');
+    } else {
+      alert('Download failed');
+    }
+  } catch(e){
+    alert('Download error');
+  }
+}
+</script>
+</body>
+</html>
