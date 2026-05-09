@@ -92,34 +92,32 @@ async def extract_video(request: URLRequest):
 
 @app.post("/api/download")
 async def download_video(request: DownloadRequest):
-    """Download video and save to file"""
     real_url = resolve_url(request.url)
     video_id = str(uuid.uuid4())[:8]
-    outtmpl = f"{DOWNLOAD_DIR}/{video_id}.%(ext)s"
-    
+
+    filename = f"{DOWNLOAD_DIR}/{video_id}.mp4"
+
     ydl_opts = {
-        'format': request.format_id,
-        'outtmpl': outtmpl,
+        'format': 'best',
+        'outtmpl': filename,
         'merge_output_format': 'mp4',
-        'user_agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36',
+        'quiet': True,
+        'no_warnings': True,
     }
-    
+
     try:
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(real_url, download=True)
-        filename = ydl.prepare_filename(info)
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.extract_info(real_url, download=True)
 
         if not os.path.exists(filename):
-            return {
-                "success": False,
-                "error": "Download file not found"
-            }
+            return {"success": False, "error": "download failed"}
 
-            return {
-    "success": True,
-    "video_id": video_id,
-    "download_url": f"/downloads/{os.path.basename(filename)}"
-} 
+        return {
+            "success": True,
+            "video_id": video_id,
+            "download_url": f"/downloads/{video_id}.mp4"
+        }
+
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -231,7 +229,26 @@ body{
 <div class="ad">Ad Space (Bottom)</div>
 
 <script>
-alert("SCRIPT LOADED SUCCESSFULLY");
+
+async function downloadVideo(){
+    let res = await fetch("/api/download", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            url: videoData.originalUrl,
+            format_id: selectedFormat
+        })
+    });
+
+    let data = await res.json();
+
+    if(data.success){
+        window.open(data.download_url, "_blank");
+    } else {
+        alert(data.error);
+    }
+}
+
 </script>
 
 <div style="margin-top:20px;">
