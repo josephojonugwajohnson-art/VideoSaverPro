@@ -231,67 +231,7 @@ body{
 <div class="ad">Ad Space (Bottom)</div>
 
 <script>
-let videoData = null;
-let selectedFormat = "best";
-
-async function extract(){
-    let url = document.getElementById("url").value;
-    if(!url) return alert("Paste URL");
-
-    document.getElementById("loading").style.display="block";
-
-    let res = await fetch("/api/extract", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({url})
-    });
-
-    let data = await res.json();
-    document.getElementById("loading").style.display="none";
-
-    if(data.success){
-        videoData = data;
-        document.getElementById("result").style.display="block";
-        document.getElementById("thumb").src = data.thumbnail;
-        document.getElementById("title").innerText = data.title;
-
-        let html = "";
-        data.formats.forEach(f=>{
-            html += `<div class="quality" onclick="selectFormat('${f.format_id}', this)">
-                        ${f.quality}
-                     </div>`;
-        });
-
-        document.getElementById("formats").innerHTML = html;
-    } else {
-        alert(data.error);
-    }
-}
-
-function selectFormat(fmt, el){
-    selectedFormat = fmt;
-    document.querySelectorAll(".quality").forEach(e=>e.classList.remove("selected"));
-    el.classList.add("selected");
-}
-
-async function downloadVideo(){
-    let res = await fetch("/api/download", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            url: videoData.originalUrl,
-            format_id: selectedFormat
-        })
-    });
-
-    let data = await res.json();
-
-    if(data.success){
-        window.open(data.download_url, "_blank");
-    } else {
-        alert(data.error);
-    }
-}
+alert("SCRIPT LOADED SUCCESSFULLY");
 </script>
 
 <div style="margin-top:20px;">
